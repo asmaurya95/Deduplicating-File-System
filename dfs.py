@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 
-
-#from __future__ import with_statement
-
-import os
-import sys
-import errno
+import os   # os module is needed to get access to os dependent functionalities for FS
+import sys  # sys module required to get access to arguments (root and mount dir)
+import errno # to access EACCES (Permition Denied) errno symbol
 
 from fuse import FUSE, FuseOSError, Operations
-
 
 class Passthrough(Operations):
     def __init__(self, root):
@@ -126,7 +122,6 @@ class Passthrough(Operations):
 
     def fsync(self, path, fdatasync, fh):
         return self.flush(path, fh)
-
 
 def main(mountpoint, root):
     FUSE(Passthrough(root), mountpoint, nothreads=True, foreground=True)
