@@ -2,11 +2,12 @@
 
 import os   # os module is needed to get access to os dependent functionalities for FS
 import sys  # sys module required to get access to arguments (root and mount dir)
-import errno # to access EACCES (Permition Denied) errno symbol
+import errno    # to access EACCES (Permition Denied) errno symbol
+import hashlib  # For hash function to check duplicate data 
 
 from fuse import FUSE, FuseOSError, Operations
 
-class Passthrough(Operations):
+class DFS(Operations):
     def __init__(self, root):
         self.root = root
 
@@ -124,7 +125,7 @@ class Passthrough(Operations):
         return self.flush(path, fh)
 
 def main(mountpoint, root):
-    FUSE(Passthrough(root), mountpoint, nothreads=True, foreground=True)
+    FUSE(DFS(root), mountpoint, nothreads=True, foreground=True)
 
 if __name__ == '__main__':
     main(sys.argv[2], sys.argv[1])
