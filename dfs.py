@@ -2,10 +2,20 @@
 
 import os   # os module is needed to get access to os dependent functionalities for FS
 import sys  # sys module required to get access to arguments (root and mount dir)
-import errno    # to access EACCES (Permition Denied) errno symbol
-import hashlib  # For hash function to check duplicate data 
+import errno    # for EACCES (Permission Denied) errno symbol
+import hashlib  # For hash function to check if block exists in database
+import MySQLdb  # Module for Database related operations
 
 from fuse import FUSE, FuseOSError, Operations
+
+# Database Configuration
+DB = 'FUSE_DB'
+USER = 'mysql_fuse'
+PASSWORD = '1234'
+HOST = 'localhost'
+
+BLOCK_SIZE = 4096
+HASH_SIZE = 64
 
 class DFS(Operations):
     def __init__(self, root):
