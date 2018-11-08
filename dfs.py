@@ -1,20 +1,21 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import os   # os module is needed to get access to os dependent functionalities for FS
 import sys  # sys module required to get access to arguments (root and mount dir)
 import errno    # for EACCES (Permission Denied) errno symbol
-import hashlib  # For hash function to check if block exists in database
-import MySQLdb  # Module for Database related operations
+import hashlib  # for hash function to calculate hash for a block
+import psycopg2  # for Database related operations
 
 from fuse import FUSE, FuseOSError, Operations
 
 # Database Configuration
 DB = 'FUSE_DB'
-USER = 'mysql_fuse'
-PASSWORD = '1234'
-HOST = 'localhost'
+USER = 'dummyuser'
+PASSWORD = '12345'
+HOST = '127.0.0.1'
+PORT = '5432'
 
-BLOCK_SIZE = 4096
+BLOCK_SIZE = 8192
 HASH_SIZE = 64
 
 class DFS(Operations):
@@ -113,8 +114,15 @@ class DFS(Operations):
         return os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
 
     def read(self, path, length, offset, fh):
-        os.lseek(fh, offset, os.SEEK_SET)
-        return os.read(fh, length)
+        #os.lseek(fh, offset, os.SEEK_SET)
+        #return os.read(fh, length)
+        conn = psycopg2.connect(database = DB, user = USER, password = PASSWORD, host = HOST, port = PORT)
+        new_offset = (offset * HASH_SIZE) / BLOCK_SIZE
+        new_length = (length * HASH_SIZE) / BLOCK_SIZE
+        os.lseek(fh, new_offset, os.SEEK_SET)
+        contents = os.read(fh, new_length)
+        
+
 
     def write(self, path, buf, offset, fh):
         os.lseek(fh, offset, os.SEEK_SET)
