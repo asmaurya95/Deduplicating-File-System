@@ -1,7 +1,8 @@
 #!/usr/bin/env python2
 
 import os   # os module is needed to get access to os dependent functionalities for FS
-import sys  # sys module required to get access to arguments (root and mount dir)
+# sys module required to get access to arguments (root and mount dir)
+import sys
 import errno    # for EACCES (Permission Denied) errno symbol
 import hashlib  # for hash function to calculate hash for a block
 import psycopg2  # for Database related operations
@@ -17,6 +18,7 @@ PORT = '5432'
 
 BLOCK_SIZE = 8192
 HASH_SIZE = 64
+
 
 class DFS(Operations):
     def __init__(self, root):
@@ -51,7 +53,7 @@ class DFS(Operations):
         full_path = self._full_path(path)
         st = os.lstat(full_path)
         return dict((key, getattr(st, key)) for key in ('st_atime', 'st_ctime',
-                     'st_gid', 'st_mode', 'st_mtime', 'st_nlink', 'st_size', 'st_uid'))
+                                                        'st_gid', 'st_mode', 'st_mtime', 'st_nlink', 'st_size', 'st_uid'))
 
     def readdir(self, path, fh):
         full_path = self._full_path(path)
@@ -84,8 +86,8 @@ class DFS(Operations):
         full_path = self._full_path(path)
         stv = os.statvfs(full_path)
         return dict((key, getattr(stv, key)) for key in ('f_bavail', 'f_bfree',
-            'f_blocks', 'f_bsize', 'f_favail', 'f_ffree', 'f_files', 'f_flag',
-            'f_frsize', 'f_namemax'))
+                                                         'f_blocks', 'f_bsize', 'f_favail', 'f_ffree', 'f_files', 'f_flag',
+                                                         'f_frsize', 'f_namemax'))
 
     def unlink(self, path):
         return os.unlink(self._full_path(path))
@@ -115,14 +117,13 @@ class DFS(Operations):
 
     def read(self, path, length, offset, fh):
         #os.lseek(fh, offset, os.SEEK_SET)
-        #return os.read(fh, length)
-        conn = psycopg2.connect(database = DB, user = USER, password = PASSWORD, host = HOST, port = PORT)
+        # return os.read(fh, length)
+        conn = psycopg2.connect(database=DB, user=USER,
+                                password=PASSWORD, host=HOST, port=PORT)
         new_offset = (offset * HASH_SIZE) / BLOCK_SIZE
         new_length = (length * HASH_SIZE) / BLOCK_SIZE
         os.lseek(fh, new_offset, os.SEEK_SET)
         contents = os.read(fh, new_length)
-        
-
 
     def write(self, path, buf, offset, fh):
         os.lseek(fh, offset, os.SEEK_SET)
@@ -142,8 +143,10 @@ class DFS(Operations):
     def fsync(self, path, fdatasync, fh):
         return self.flush(path, fh)
 
+
 def main(mountpoint, root):
     FUSE(DFS(root), mountpoint, nothreads=True, foreground=True)
+
 
 if __name__ == '__main__':
     main(sys.argv[2], sys.argv[1])
